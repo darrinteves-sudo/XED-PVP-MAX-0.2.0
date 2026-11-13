@@ -1,0 +1,44 @@
+
+name: Build XED PvP MAX
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main, master]
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Java 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '9.2.0'
+
+      - name: Extract project
+        run: |
+          mkdir extracted
+          unzip -q XED_PvP_MAX_0.2.0_source.zip -d extracted
+
+      - name: Build mod
+        run: |
+          cd extracted/XED_PvP_MAX_Fabric_Project
+          gradle build --no-daemon
+
+      - name: Upload JAR
+        uses: actions/upload-artifact@v4
+        with:
+          name: xed-pvp-max-jars
+          path: extracted/XED_PvP_MAX_Fabric_Project/build/libs/*.jar
+          if-no-files-found: error
