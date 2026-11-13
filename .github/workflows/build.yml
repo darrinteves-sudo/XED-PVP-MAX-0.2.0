@@ -32,18 +32,28 @@ jobs:
           unzip -q XED_PvP_MAX_0.2.0_source.zip -d extracted
 
 
+
       - name: Build mod
         shell: bash
         run: |
-          PROJECT_DIR=$(find extracted -type f \
+          SETTINGS=$(find extracted -type f \
             \( -name settings.gradle -o -name settings.gradle.kts \) \
-            -printf '%h\n' | head -n 1)
+            | head -n 1)
 
-          if [ -z "$PROJECT_DIR" ]; then
-            echo "Gradle project not found!"
-            find extracted -maxdepth 4 -type f
+          if [ -z "$SETTINGS" ]; then
+            echo "settings.gradle not found"
             exit 1
           fi
+
+          sed -i \
+            's/RepositoriesMode.PREFER_SETTINGS/RepositoriesMode.PREFER_PROJECT/g; s/RepositoriesMode.FAIL_ON_PROJECT_REPOS/RepositoriesMode.PREFER_PROJECT/g' \
+            "$SETTINGS"
+
+          PROJECT_DIR=$(dirname "$SETTINGS")
+          cd "$PROJECT_DIR"
+
+          gradle build --no-daemon
+
 
           cd "$PROJECT_DIR"
           gradle build --no-daemon
