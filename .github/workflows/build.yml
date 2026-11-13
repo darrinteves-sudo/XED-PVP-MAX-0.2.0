@@ -12,6 +12,7 @@ permissions:
 jobs:
   build:
     runs-on: ubuntu-latest
+
     steps:
       - uses: actions/checkout@v4
 
@@ -28,40 +29,37 @@ jobs:
 
       - name: Extract project
         run: |
-          mkdir extracted
+          mkdir -p extracted
           unzip -q XED_PvP_MAX_0.2.0_source.zip -d extracted
 
-
-
-      - name: Build mod
-        shell: bash
+      - name: Fix Fabric repository configuration
         run: |
-          SETTINGS=$(find extracted -type f \
-            \( -name settings.gradle -o -name settings.gradle.kts \) \
-            | head -n 1)
+          SETTINGS=$(find extracted -name settings.gradle -o -name settings.gradle.kts | head -n 1)
 
           if [ -z "$SETTINGS" ]; then
-            echo "settings.gradle not found"
+            echo "ERROR: settings.gradle not found"
             exit 1
           fi
 
-          sed -i \
-            's/RepositoriesMode.PREFER_SETTINGS/RepositoriesMode.PREFER_PROJECT/g; s/RepositoriesMode.PREFER/RepositoriesMode.PREFER_PROJECT/g' \
-            "$SETTINGS"
+          sed -i 's/RepositoriesMode.FAIL_ON_PROJECT_REPOS/RepositoriesMode.PREFER_PROJECT/g' "$SETTINGS"
 
-          PROJECT_DIR=$(dirname "$SETTINGS")
+          echo "Repository configuration updated."
+
+      - name: Build mod
+        run: |
+          PROJECT_DIR=$(find extracted -type f -name build.gradle -printf '%h\n' | head -n 1)
+
+          if [ -z "$PROJECT_DIR" ]; then
+            echo "ERROR: build.gradle not found"
+            exit 1
+          fi
+
           cd "$PROJECT_DIR"
-
           gradle build --no-daemon
-
-
-          cd "$PROJECT_DIR"
-          gradle build --no-daemon
-
 
       - name: Upload JAR
         uses: actions/upload-artifact@v4
         with:
           name: xed-pvp-max-jars
-          path: extracted/XED_PvP_MAX_Fabric_Project/build/libs/*.jar
+          path: extracted/**/build/libs/*.jar
           if-no-files-found: error
