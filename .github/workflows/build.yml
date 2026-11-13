@@ -46,7 +46,7 @@ jobs:
           fi
 
           sed -i \
-            's/RepositoriesMode.PREFER_SETTINGS/RepositoriesMode.PREFER_PROJECT/g; s/RepositoriesMode.FAIL_ON_PROJECT_REPOS/RepositoriesMode.PREFER_PROJECT/g' \
+            's/RepositoriesMode.PREFER_SETTINGS/RepositoriesMode.PREFER_PROJECT/g; s/RepositoriesMode.PREFER/RepositoriesMode.PREFER_PROJECT/g' \
             "$SETTINGS"
 
           PROJECT_DIR=$(dirname "$SETTINGS")
