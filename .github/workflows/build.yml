@@ -30,7 +30,7 @@ jobs:
       - name: Extract project
         run: |
           mkdir -p extracted
-          unzip -q XED_PvP_MAX_0.2.0_source.zip -d extracted
+          unzip -q XED_PvP_MAX_FIXED_DOWNLOAD-1.zip -d extracted
 
       - name: Fix Fabric repository configuration
         run: |
